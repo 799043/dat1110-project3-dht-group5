@@ -13,8 +13,6 @@ import java.security.NoSuchAlgorithmException;
 
 public class Hash { 
 	
-	private byte[] digest;
-	
 	public static BigInteger hashOf(String entity) {	
 		
 		BigInteger hashint = null;
@@ -27,13 +25,12 @@ public class Hash {
 			md = MessageDigest.getInstance("MD5");
 		} catch (NoSuchAlgorithmException e) {
 			e.printStackTrace();
+			return null;
 		}
 		
 		// compute the hash of the input 'entity'
-//		byte[] digest = md.digest();
-		md.update(entity.getBytes());
-		digest = md.digest();
-		
+		byte[] digest = md.digest(entity.getBytes());
+
 		// convert the hash into hex format
 		String hex = toHex(digest);
 		
@@ -49,10 +46,10 @@ public class Hash {
 		// Task: compute the address size of MD5
 		
 		// compute the number of bits = bitSize()
-		int bitsize = 0;
+		int bitsize = bitSize();
 		
 		// compute the address size = 2 ^ number of bits
-		BigInteger addressSize = BigInteger.valueOf((long) Math.pow(2, bitsize));
+		BigInteger addressSize = BigInteger.valueOf(2).pow(bitsize);
 		
 		// return the address size
 		return addressSize;
@@ -63,7 +60,13 @@ public class Hash {
 		int digestlen = 0;
 		
 		// find the digest length
-		digestlen = digest.length();
+		try {
+			MessageDigest md = MessageDigest.getInstance("MD5");
+			digestlen = md.getDigestLength();
+		} catch (NoSuchAlgorithmException e) {
+			e.printStackTrace();
+			return digestlen = 0;
+		}
 		
 		return digestlen*8;
 	}
