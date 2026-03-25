@@ -44,15 +44,31 @@ public class Util {
 		// if id = 9, then (6 < 9 <= 2) = true
 		
 		// Task: given an identifier, id: check whether pred < id <= node
-		if (lower.compareTo(id) <= 0 && id.compareTo(upper) <= 0) {
-			return true;
-		} else if (lower.compareTo(id) < 0 && id.compareTo(upper) <= 0) {
-			checkInterval(id,lower.add(BigInteger.ONE),upper);
-		} else if (lower.compareTo(id) <= 0 && id.compareTo(upper) < 0) {
-			checkInterval(id,lower,upper.add(BigInteger.ONE));
-		} else if (lower.compareTo(id) < 0 && id.compareTo(upper) < 0) {
-			checkInterval(id,lower.add(BigInteger.ONE),upper.add(BigInteger.ONE));
+		BigInteger en = BigInteger.ONE;
+		BigInteger ti = BigInteger.TEN;
+		BigInteger modid = id.mod(ti);
+		BigInteger modlower = lower.mod(ti);
+		BigInteger modupper = upper.mod(ti); 
+		//TODO: Juster mod til største tall: 
+		/*
+		 * Id = 500
+		 * Lower = 20
+		 * Upper = 6
+		 * 
+		 * Da er modul = 100
+		 * 
+		 * Tell som vanlig etter.
+		 */
+
+		List<BigInteger> rekke = new ArrayList<>();
+		
+		while(modlower.compareTo(modupper) != 0) {
+			rekke.add(modlower);
+			modlower = modlower.add(en).mod(ti);
 		}
+		
+		if (rekke.contains(modid)) return true;
+		
 		
 		return false;
 
