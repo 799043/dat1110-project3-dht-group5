@@ -33,22 +33,24 @@ public class ChordLookup {
 	
 	public NodeInterface findSuccessor(BigInteger key) throws RemoteException {
 		// ask this node to find the successor of key
+		this.node.findSuccessor(key);
 		
 		// get the successor of the node
-		NodeInterface successor = node.getSuccessor();
+		NodeInterface successor = this.node.getSuccessor();
+		
 		// check that key is a member of the set {nodeid+1,...,succID} i.e. (nodeid+1 <= key <= succID) using the checkInterval
+		boolean checkKeyMembership = Util.checkInterval(this.node.getNodeID().add(BigInteger.ONE), key, successor.getNodeID());
 		
 		// if logic returns true, then return the successor
-		if () {
-			
+		if (checkKeyMembership) {
+			return successor;
 		}
 		// if logic returns false; call findHighestPredecessor(key)
-		if () {
+		if (!checkKeyMembership) {
 			findHighestPredecessor(key);
 		}
 		// do highest_pred.findSuccessor(key) - This is a recursive call until logic returns true
-				
-		return highest_pred.findSuccessor(key);					
+		highest_pred.findSuccessor(key);					
 	}
 	
 	/**
@@ -60,15 +62,21 @@ public class ChordLookup {
 	private NodeInterface findHighestPredecessor(BigInteger ID) throws RemoteException {
 		
 		// collect the entries in the finger table for this node
+		List<NodeInterface> fingertable = node.getFingerTable();
 		
 		// starting from the last entry, iterate over the finger table
-		
-		// for each finger, obtain a stub from the registry
-		
-		// check that finger is a member of the set {nodeID+1,...,ID-1} i.e. (nodeID+1 <= finger <= key-1) using the ComputeLogic
-		
-		// if logic returns true, then return the finger (means finger is the closest to key)
-		
+		for (int i = fingertable.size()-1; i > 0; i--) {
+			
+			// for each finger, obtain a stub from the registry
+			NodeInterface finger = fingertable.get(i);
+			
+			// check that finger is a member of the set {nodeID+1,...,ID-1} i.e. (nodeID+1 <= finger <= key-1) using the ComputeLogic
+			if(Util.checkInterval(ID.add(BigInteger.ONE),finger.getNodeID(),ID.subtract(BigInteger.ONE))) {
+			
+				// if logic returns true, then return the finger (means finger is the closest to key)
+				return finger;
+			}	
+		}
 		return (NodeInterface) node;			
 	}
 	
