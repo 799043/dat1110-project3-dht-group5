@@ -15,7 +15,6 @@ import org.apache.logging.log4j.Logger;
 import no.hvl.dat110.middleware.Message;
 import no.hvl.dat110.middleware.Node;
 import no.hvl.dat110.rpc.interfaces.NodeInterface;
-import no.hvl.dat110.util.Hash;
 import no.hvl.dat110.util.Util;
 
 /**
@@ -33,24 +32,33 @@ public class ChordLookup {
 	
 	public NodeInterface findSuccessor(BigInteger key) throws RemoteException {
 		// ask this node to find the successor of key
-		this.node.findSuccessor(key);
-		
-		// get the successor of the node
 		NodeInterface successor = this.node.getSuccessor();
 		
 		// check that key is a member of the set {nodeid+1,...,succID} i.e. (nodeid+1 <= key <= succID) using the checkInterval
-		boolean checkKeyMembership = Util.checkInterval(this.node.getNodeID().add(BigInteger.ONE), key, successor.getNodeID());
+		boolean checkKeyMembership = Util.checkInterval(key, this.node.getNodeID().add(BigInteger.ONE), successor.getNodeID());
 		
 		// if logic returns true, then return the successor
 		if (checkKeyMembership) {
 			return successor;
+		} else {
+			// if logic returns false; call findHighestPredecessor(key)
+			NodeInterface highest_pred = findHighestPredecessor(key);
+			
+			if (highest_pred == null) {
+				return successor;
+			}
+			
+			try {
+				if (highest_pred.getNodeName().equals(node.getNodeName())) {
+					return successor;
+				}
+			} catch (RemoteException e) {
+				return successor;
+			}
+			
+			// do highest_pred.findSuccessor(key) - This is a recursive call until logic returns true
+			return highest_pred.findSuccessor(key);
 		}
-		// if logic returns false; call findHighestPredecessor(key)
-		if (!checkKeyMembership) {
-			findHighestPredecessor(key);
-		}
-		// do highest_pred.findSuccessor(key) - This is a recursive call until logic returns true
-		highest_pred.findSuccessor(key);					
 	}
 	
 	/**
@@ -65,19 +73,22 @@ public class ChordLookup {
 		List<NodeInterface> fingertable = node.getFingerTable();
 		
 		// starting from the last entry, iterate over the finger table
-		for (int i = fingertable.size()-1; i > 0; i--) {
+		for (int i = fingertable.size()-1; i >= 0; i--) {
 			
 			// for each finger, obtain a stub from the registry
 			NodeInterface finger = fingertable.get(i);
+			if (finger == null)
+				continue;
 			
 			// check that finger is a member of the set {nodeID+1,...,ID-1} i.e. (nodeID+1 <= finger <= key-1) using the ComputeLogic
-			if(Util.checkInterval(ID.add(BigInteger.ONE),finger.getNodeID(),ID.subtract(BigInteger.ONE))) {
-			
+			// Correct parameter order for checkInterval is (id, lower, upper)
+			if(Util.checkInterval(finger.getNodeID(), node.getNodeID().add(BigInteger.ONE), ID.subtract(BigInteger.ONE))) {
+				
 				// if logic returns true, then return the finger (means finger is the closest to key)
 				return finger;
-			}	
+			}
 		}
-		return (NodeInterface) node;			
+		return (NodeInterface) node; 			
 	}
 	
 	public void copyKeysFromSuccessor(NodeInterface succ) {
@@ -97,11 +108,11 @@ public class ChordLookup {
 
 				if(fileID.compareTo(nodeID) <= 0) {
 					logger.info("fileID="+fileID+" | nodeID= "+nodeID);
-					node.addKey(fileID); 															// re-assign file to this successor node
-					Message msg = succ.getFilesMetadata().get(fileID);				
-					node.saveFileContent(msg.getNameOfFile(), fileID, msg.getBytesOfFile(), msg.isPrimaryServer()); 			// save the file in memory of the newly joined node
-					succ.removeKey(fileID); 	 																				// remove the file key from the successor
-					succ.getFilesMetadata().remove(fileID); 																	// also remove the saved file from memory
+					node.addKey(fileID); 																				// re-assign file to this successor node
+					Message msg = succ.getFilesMetadata().get(fileID); 					
+					node.saveFileContent(msg.getNameOfFile(), fileID, msg.getBytesOfFile(), msg.isPrimaryServer()); 						// save the file in memory of the newly joined node
+					succ.removeKey(fileID); 				 																			// remove the file key from the successor
+					succ.getFilesMetadata().remove(fileID); 																			// also remove the saved file from memory
 				}
 			}
 			
@@ -117,7 +128,7 @@ public class ChordLookup {
 		
 		// if the predecessor is null accept the new predecessor
 		if(pred_old == null) {
-			node.setPredecessor(pred_new);		// accept the new predecessor
+			node.setPredecessor(pred_new); 		// accept the new predecessor
 			return;
 		}
 		
@@ -133,9 +144,9 @@ public class ChordLookup {
 			// check that pred_new is between pred_old and this node, accept pred_new as the new predecessor
 			// check that ftsuccID is a member of the set {nodeID+1,...,ID-1}
 			boolean cond = Util.checkInterval(pred_newID, pred_oldID.add(BigInteger.ONE), nodeID.add(BigInteger.ONE));
-			if(cond) {		
-				node.setPredecessor(pred_new);		// accept the new predecessor
-			}	
+			if(cond) { 		
+				node.setPredecessor(pred_new); 		// accept the new predecessor
+			} 	
 		}		
 	}
 

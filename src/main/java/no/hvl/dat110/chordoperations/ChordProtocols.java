@@ -175,20 +175,20 @@ public class ChordProtocols {
 			
 			// iterate over the number of bits			
 			for (int i = 0; i < bitSize; i++) {
-				
 				// compute: k = succ(n + 2^(i)) mod 2^mbit
-				k = succ(n + Math.pow(2, i)) % addresssize;
+				BigInteger offset = BigInteger.valueOf(2).pow(i);
+				k = ((Node) chordnode).getNodeID().add(offset).mod(addresssize);
+				
+				// then: use chordnode to find the successor of k. (i.e., succnode = chordnode.findSuccessor(k))
+				NodeInterface succnode = chordnode.findSuccessor(k);
+				
+				// check that succnode is not null, then add it to the finger table
+				if (succnode != null) {
+					fingertable.add(succnode);
+				}
 			}
 			
 			
-			
-			// then: use chordnode to find the successor of k. (i.e., succnode = chordnode.findSuccessor(k))
-			NodeInterface succnode = chordnode.findSuccessor(k);
-			
-			// check that succnode is not null, then add it to the finger table
-			if (succnode != null) {
-				fingertable.add(succnode);
-			}
 			
 		} catch (RemoteException e) {
 			//

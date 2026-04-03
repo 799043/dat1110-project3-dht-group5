@@ -44,8 +44,23 @@ public class Util {
 		// if id = 9, then (6 < 9 <= 2) = true
 		
 		// Task: given an identifier, id: check whether pred < id <= node
+		BigInteger mod = Hash.addressSize();
+		BigInteger idmod = id.mod(mod);
+		BigInteger lowermod = lower.mod(mod);
+		BigInteger uppermod = upper.mod(mod);
 		
+		if (lowermod.compareTo(uppermod) < 0) { 	
+			if (idmod.compareTo(lowermod) >= 0 && idmod.compareTo(uppermod) <= 0)
+				return true;
 		
+		} else if (lowermod.compareTo(uppermod) > 0) { 	
+			if (idmod.compareTo(lowermod) >= 0 || idmod.compareTo(uppermod) <= 0)
+				return true;
+		
+		} else { 	
+			return true;
+		
+		}
 		return false;
 
 	}
@@ -67,12 +82,11 @@ public class Util {
 		Registry registry = null;
 		try {
 			// Get the registry for this worker node
-			registry = LocateRegistry.getRegistry(port);		
-			
-			nodestub = (NodeInterface) registry.lookup(name);	// remote stub
+			registry = LocateRegistry.getRegistry(port); 		
+			nodestub = (NodeInterface) registry.lookup(name); 	// remote stub
 			
 		} catch (NotBoundException | RemoteException e) {
-			return null;			// if this call fails, then treat the node to have left the ring...or unavailable
+			return null; 			// if this call fails, then treat the node to have left the ring...or unavailable
 		}
 		
 		return nodestub;
