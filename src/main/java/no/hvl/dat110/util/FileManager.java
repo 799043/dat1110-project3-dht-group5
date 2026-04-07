@@ -85,23 +85,40 @@ public class FileManager {
     	
     	int counter = 0;
 	
+    	NodeInterface succ = null;
+    	
+    	//pred, replicaid, peer, fileid????
+    	
     	// Task1: Given a filename, make replicas and distribute them to all active peers such that: pred < replica <= peer
+    	createReplicaFiles();
+    	Util.checkInterval(pred, replicaID, peer);
     	
     	// Task2: assign a replica as the primary for this file. Hint, see the slide (project 3) on Canvas
+    	chordnode.saveFileContent(filename, fileID, bytesOfFile, true);
     	
     	// create replicas of the filename
+    	createReplicaFiles(); //???
     	
-		// iterate over the replicas
+    	// iterate over the replicas
+    	for (int i = 0; i < Util.numReplicas; i++) {
+    		// for each replica, find its successor (peer/node) by performing findSuccessor(replica)
+    		succ = chordnode.findSuccessor(replicafiles[i]);
+    		
+    		// call the addKey on the successor and add the replica
+    		succ.addKey(replicafiles[i]);
+    	}
     	
-    	// for each replica, find its successor (peer/node) by performing findSuccessor(replica)
-    	
-    	// call the addKey on the successor and add the replica
-		
 		// implement a logic to decide if this successor should be assigned as the primary for the file
-    	
-    	// call the saveFileContent() on the successor and set isPrimary=true if logic above is true otherwise set isPrimary=false
+    	if (counter == index) {
+    		
+    		// call the saveFileContent() on the successor and set isPrimary=true if logic above is true otherwise set isPrimary=false
+    		succ.saveFileContent(filename, fileID, bytesOfFile, true);
+    	} else {
+    		succ.saveFileContent(filename, fileID, bytesOfFile, false);
+    	}
     	
     	// increment counter
+    	counter++;
 		return counter;
     }
 	
