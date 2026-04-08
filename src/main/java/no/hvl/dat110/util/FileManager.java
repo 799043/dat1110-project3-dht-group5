@@ -130,12 +130,19 @@ public class FileManager {
 		this.filename = filename;
 		activeNodesforFile = new HashSet<Message>(); 
 
+		NodeInterface s = null;
+		hash = Hash.hashOf(filename);
 		// Task: Given a filename, find all the peers that hold a copy of this file
 		
+		
 		// generate the N replicas from the filename by calling createReplicaFiles()
+		createReplicaFiles();
 		
 		// iterate over the replicas of the file
-		
+		for (int i = 0; i < Util.numReplicas; i++) {
+			s = chordnode.findSuccessor(replicafiles[i]);
+			activeNodesforFile.add(s.getFilesMetadata(hash));
+		}
 		// for each replica, do findSuccessor(replica) that returns successor s.
 		
 		// get the metadata (Message) of the replica from the successor (i.e., active peer) of the file
