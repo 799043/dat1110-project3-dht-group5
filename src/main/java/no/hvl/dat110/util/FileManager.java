@@ -15,6 +15,7 @@ import java.security.NoSuchAlgorithmException;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Random;
 import java.util.Set;
 
@@ -159,9 +160,12 @@ public class FileManager {
 	public NodeInterface findPrimaryOfItem() {
 
 		// Task: Given all the active peers of a file (activeNodesforFile()), find which is holding the primary copy
-		
+		Iterator<Message> ItMessage = activeNodesforFile.iterator();
 		// iterate over the activeNodesforFile
-		
+		for (int i = 0; i < activeNodesforFile.size(); i++) {
+			Message message = ItMessage.next();
+			if (message.isPrimaryServer()) return Util.getProcessStub(message.getNameOfFile(), message.getPort());
+		}
 		// for each active peer (saved as Message)
 		
 		// use the primaryServer boolean variable contained in the Message class to check if it is the primary or not
