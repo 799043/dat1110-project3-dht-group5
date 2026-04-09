@@ -90,18 +90,29 @@ public class FileManager {
     	// Task2: assign a replica as the primary for this file. Hint, see the slide (project 3) on Canvas
     	
     	// create replicas of the filename
-    	
+    	createReplicaFiles();
+
 		// iterate over the replicas
+		for (BigInteger replica : replicafiles) {
+			// for each replica, find its successor (peer/node) by performing findSuccessor(replica)
+			NodeInterface successor = chordnode.findSuccessor(replica);
+
+			// call the addKey on the successor and add the replica
+			successor.addKey(replica);
+
+			// implement a logic to decide if this successor should be assigned as the primary for the file
+			if (counter == index) {
+				// call the saveFileContent() on the successor and set isPrimary=true if logic above is true otherwise set isPrimary=false
+				successor.saveFileContent(filename, replica, bytesOfFile, true);
+			} else {
+				successor.saveFileContent(filename, replica, bytesOfFile, false);
+			}
+
+			// increment counter
+			counter++;
+		}
+    	    	
     	
-    	// for each replica, find its successor (peer/node) by performing findSuccessor(replica)
-    	
-    	// call the addKey on the successor and add the replica
-		
-		// implement a logic to decide if this successor should be assigned as the primary for the file
-    	
-    	// call the saveFileContent() on the successor and set isPrimary=true if logic above is true otherwise set isPrimary=false
-    	
-    	// increment counter
 		return counter;
     }
 	
