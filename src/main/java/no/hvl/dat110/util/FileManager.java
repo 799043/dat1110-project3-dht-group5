@@ -28,11 +28,11 @@ public class FileManager {
 	
 	private static final Logger logger = LogManager.getLogger(FileManager.class);
 	
-	private BigInteger[] replicafiles;							// array stores replicated files for distribution to matching nodes
-	private int numReplicas;									// let's assume each node manages nfiles (5 for now) - can be changed from the constructor
+	private BigInteger[] replicafiles;		// array stores replicated files for distribution to matching nodes
+	private int numReplicas;				// let's assume each node manages nfiles (5 for now) - can be changed from the constructor
 	private NodeInterface chordnode;
-	private String filepath; 									// absolute filepath
-	private String filename;									// only filename without path and extension
+	private String filepath; 				// absolute filepath
+	private String filename;				// only filename without path and extension
 	private BigInteger hash;
 	private byte[] bytesOfFile;
 	private String sizeOfByte;
@@ -58,13 +58,18 @@ public class FileManager {
 	
 	public void createReplicaFiles() {
 	 	
-		// set a loop where size = numReplicas
-		
+		// Task
+		// set a loop where size = numReplicas		
 		// replicate by adding the index to filename
-		
-		// hash the replica
-		
+		// hash the replica		
 		// store the hash in the replicafiles array.
+// -------------------Egen-----------------------
+		for (int i=0; i < Util.numReplicas; i++) {
+			String replica = filename + i;
+			BigInteger hashedRep = Hash.hashOf(replica);
+			replicafiles[i] = hashedRep;
+		}
+// -------------------Egen-----------------------
 	}
 	
     /**

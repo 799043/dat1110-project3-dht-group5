@@ -21,9 +21,9 @@ import no.hvl.dat110.util.Hash;
 
 public class Node extends UnicastRemoteObject implements NodeInterface {
 	
-	private BigInteger nodeID;							// BigInteger value of hash of IP address/name of the Node
-	protected String nodename;							// IP address/name of the node 
-	private int port;									// port on which the registry for this node is running
+	private BigInteger nodeID;				// BigInteger value of hash of IP address/name of the Node
+	protected String nodename;				// IP address/name of the node 
+	private int port;						// port on which the registry for this node is running
 	private NodeInterface successor;
 	private NodeInterface predecessor;
 	private Set<BigInteger> keys;
@@ -31,10 +31,10 @@ public class Node extends UnicastRemoteObject implements NodeInterface {
 	private List<NodeInterface> fingerTable;
 	private Map<BigInteger, Message> filesMetadata;		//
 	
-	protected Set<Message> activenodesforfile;			// this list stores all active peers holding copies of a file 
+	protected Set<Message> activenodesforfile;		// this list stores all active peers holding copies of a file 
 	
-	private UpdateOperations updater;					// this class contains methods for handling file updates
-	private ChordLookup lookup;							// this class contains methods for looking up keys in a chord ring
+	private UpdateOperations updater;			// this class contains methods for handling file updates
+	private ChordLookup lookup;					// this class contains methods for looking up keys in a chord ring
 		
 	private Message message;
 	
@@ -46,8 +46,8 @@ public class Node extends UnicastRemoteObject implements NodeInterface {
 	public Node(String nodename, int port) throws RemoteException {
 		super();
 		this.port = port;
-		this.nodename = nodename;									// use a different name as "IP" for single machine simulation
-		nodeID = Hash.hashOf(nodename);								// use the MD5  from Hash class
+		this.nodename = nodename;				// use a different name as "IP" for single machine simulation
+		nodeID = Hash.hashOf(nodename);			// use the MD5  from Hash class
 		
 		keys = new HashSet<BigInteger>();
 		fingerTable = new ArrayList<>();
@@ -55,7 +55,7 @@ public class Node extends UnicastRemoteObject implements NodeInterface {
 		updater = new UpdateOperations(this, filesMetadata);
 		lookup = new ChordLookup(this);
 
-		message = new Message(nodeID, nodename, port);				// default message
+		message = new Message(nodeID, nodename, port);		// default message
 		mutex = new MutualExclusion(this);
 	}
 	

@@ -71,7 +71,7 @@ public class Util {
 			nodestub = (NodeInterface) registry.lookup(name);	// remote stub
 			
 		} catch (NotBoundException | RemoteException e) {
-			return null;			// if this call fails, then treat the node to have left the ring...or unavailable
+			return null;		// if this call fails, then treat the node to have left the ring...or unavailable
 		}
 		
 		return nodestub;
