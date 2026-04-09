@@ -8,6 +8,7 @@ import java.rmi.RemoteException;
 import java.rmi.registry.Registry;
 import java.util.Set;
 import java.util.Timer;
+import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -15,6 +16,7 @@ import org.apache.logging.log4j.Logger;
 import no.hvl.dat110.middleware.Message;
 import no.hvl.dat110.middleware.Node;
 import no.hvl.dat110.rpc.interfaces.NodeInterface;
+import no.hvl.dat110.util.Hash;
 import no.hvl.dat110.util.Util;
 
 /**
@@ -115,12 +117,12 @@ public class ChordProtocols {
 		
 		try {
 		 
-			NodeInterface prednode = chordnode.getPredecessor();														// get the predecessor			
-			NodeInterface succnode = chordnode.getSuccessor();														// get the successor		
+			NodeInterface prednode = chordnode.getPredecessor();	// get the predecessor			
+			NodeInterface succnode = chordnode.getSuccessor();		// get the successor		
 			
-			Set<BigInteger> keyids = chordnode.getNodeKeys();									// get the keys for chordnode
+			Set<BigInteger> keyids = chordnode.getNodeKeys();		// get the keys for chordnode
 			
-			if(succnode != null) {												// add chordnode's keys to its successor
+			if(succnode != null) {									// add chordnode's keys to its successor
 				keyids.forEach(fileID -> {
 					try {
 						logger.info("Adding fileID = "+fileID+" to "+succnode.getNodeName());
@@ -133,10 +135,10 @@ public class ChordProtocols {
 					} 
 				});
 
-				succnode.setPredecessor(prednode); 							// set prednode as the predecessor of succnode
+				succnode.setPredecessor(prednode); 		// set prednode as the predecessor of succnode
 			}
 			if(prednode != null) {
-				prednode.setSuccessor(succnode);							// set succnode as the successor of prednode			
+				prednode.setSuccessor(succnode);		// set succnode as the successor of prednode			
 			} 
 			chordnode.setSuccessor(chordnode);
 			chordnode.setPredecessor(chordnode);
@@ -157,20 +159,32 @@ public class ChordProtocols {
 			logger.info("Fixing the FingerTable for the Node: "+ chordnode.getNodeName());
 	
 			// get the finger table from the chordnode (list object)
+			List<NodeInterface> fingerTable = chordnode.getFingerTable();
 			
 			// ensure to clear the current finger table
+			fingerTable.clear();
 			
 			// get the address size from the Hash class. This is the modulus and our address space (2^mbit = modulus)
+			BigInteger modulus = Hash.addressSize();
 			
 			// get the number of bits from the Hash class. Number of bits = size of the finger table
+			int tableSize = Hash.bitSize();
 			
 			// iterate over the number of bits			
+			for (int i=0; i<tableSize; i++) {
+				// compute: k = succ(n + 2^(i)) mod 2^mbit
+				BigInteger twoPowerI = BigInteger.valueOf(2).pow(i);
+				BigInteger k = chordnode.getNodeID().add(twoPowerI).mod(modulus);
 			
-			// compute: k = succ(n + 2^(i)) mod 2^mbit
+				// then: use chordnode to find the successor of k. (i.e., succnode = chordnode.findSuccessor(k))
+				NodeInterface succnode = chordnode.findSuccessor(k);
 			
-			// then: use chordnode to find the successor of k. (i.e., succnode = chordnode.findSuccessor(k))
+				// check that succnode is not null, then add it to the finger table
+				if (succnode != null) {
+					fingerTable.add(succnode);
+				}
+			}
 			
-			// check that succnode is not null, then add it to the finger table
 
 		} catch (RemoteException e) {
 			//
