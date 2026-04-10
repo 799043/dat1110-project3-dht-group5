@@ -98,7 +98,7 @@ public class FileManager {
     	createReplicaFiles(); 
     	
     	// iterate over the replicas
-    	for (int i = 0; i < Util.numReplicas; i++) {
+    	for (int i = 0; i < this.numReplicas; i++) {
     		// for each replica, find its successor (peer/node) by performing findSuccessor(replica)
     		s = chordnode.findSuccessor(replicafiles[i]);
     		
@@ -140,12 +140,16 @@ public class FileManager {
 		createReplicaFiles();
 		
 		// iterate over the replicas of the file
-		for (int i = 0; i < Util.numReplicas; i++) {
+		for (int i = 0; i < this.numReplicas; i++) {
 			// for each replica, do findSuccessor(replica) that returns successor s.
 			s = chordnode.findSuccessor(replicafiles[i]);
+			Message m = s.getFilesMetadata(hash);
 			
 			// get the metadata (Message) of the replica from the successor (i.e., active peer) of the file
-			activeNodesforFile.add(s.getFilesMetadata(hash));
+			if (m != null) {
+				activeNodesforFile.add(m);
+			}
+			
 		}
 		
 		
@@ -162,6 +166,10 @@ public class FileManager {
 		// Task: Given all the active peers of a file (activeNodesforFile()), find which is holding the primary copy
 		
 		// iterate over the activeNodesforFile
+		if (activeNodesforFile.isEmpty() || activeNodesforFile == null) {
+			return null;
+		}
+		
 		Iterator<Message> ItMessage = activeNodesforFile.iterator();
 		while (ItMessage.hasNext()) {
 			
@@ -172,7 +180,7 @@ public class FileManager {
 			if (message != null && message.isPrimaryServer()) {
 				
 				// return the primary when found (i.e., use Util.getProcessStub to get the stub and return it)
-				return Util.getProcessStub(message.getNameOfFile(), message.getPort());
+				return Util.getProcessStub(message.getNodeName(), message.getPort());
 			}
 				
 		}
